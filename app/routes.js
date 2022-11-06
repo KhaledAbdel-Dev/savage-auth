@@ -19,9 +19,15 @@ module.exports = function(app, passport, db) {
     });
 
     // LOGOUT ==============================
+    // app.get('/logout', function(req, res) {
+    //     req.logout();
+    //     res.redirect('/');
+    // });
     app.get('/logout', function(req, res) {
-        req.logout();
-        res.redirect('/');
+      req.logout(() => {
+        console.log('User has logged out!')
+      });
+      res.redirect('/');
     });
 
 // message board routes ===============================================================
@@ -34,11 +40,26 @@ module.exports = function(app, passport, db) {
       })
     })
 
-    app.put('/messages', (req, res) => {
+    app.put('/thumbup', (req, res) => {
       db.collection('messages')
       .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
         $set: {
           thumbUp:req.body.thumbUp + 1
+        }
+      }, {
+        sort: {_id: -1},
+        upsert: true
+      }, (err, result) => {
+        if (err) return res.send(err)
+        res.send(result)
+      })
+    })
+
+    app.put('/thumbdown', (req, res) => {
+      db.collection('messages')
+      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+        $set: {
+          thumbUp:req.body.thumbUp - 1
         }
       }, {
         sort: {_id: -1},
